@@ -21,13 +21,27 @@ public:
     ~MainWindow();
 
 private slots:
+
     void on_enter_button_clicked();
 
-    void on_remove_button_clicked();
+    void on_update_image_clicked();
 
+    void on_go_button_clicked();
+
+    void on_original_image_clicked();
+
+    void on_binarized_image_clicked();
+
+    void on_removed_staves_clicked();
+
+    void on_connected_components_clicked();
 
 private:
     Ui::MainWindow *ui;
+    bool original_image_selected = true;
+    bool binarized_image_selected = false;
+    bool removed_staves_selected = false;
+    bool connected_components_selected = false;
 
     class Score
     {

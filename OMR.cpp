@@ -229,16 +229,69 @@ void MainWindow::Score::set_brightness_contrast(float input_contrast, int input_
 }
 
 
-
 void MainWindow::on_enter_button_clicked()
 {
     QString url = ui->filepath_input->text();
     QPixmap img(url);
+    ui->image->setFixedSize(img.size());
     ui->image->setPixmap(img);
 }
 
-void MainWindow::on_remove_button_clicked()
+void MainWindow::on_update_image_clicked()
+{
+    if (true)
+    {
+
+    }
+}
+
+void MainWindow::on_go_button_clicked()
 {
     QString url = ui->filepath_input->text();
     QPixmap img(url);
+}
+
+void MainWindow::on_original_image_clicked()
+{
+    original_image_selected = true;
+    binarized_image_selected = false;
+    removed_staves_selected = false;
+    connected_components_selected = false;
+    ui->binarized_image->setChecked(false);
+    ui->removed_staves->setChecked(false);
+    ui->connected_components->setChecked(false);
+}
+
+void MainWindow::on_binarized_image_clicked()
+{
+    original_image_selected = false;
+    binarized_image_selected = true;
+    removed_staves_selected = false;
+    connected_components_selected = false;
+    ui->original_image->setChecked(false);
+    ui->removed_staves->setChecked(false);
+    ui->connected_components->setChecked(false);
+}
+
+void MainWindow::on_removed_staves_clicked()
+{
+    original_image_selected = false;
+    binarized_image_selected = false;
+    removed_staves_selected = true;
+    connected_components_selected = false;
+    ui->original_image->setChecked(false);
+    ui->binarized_image->setChecked(false);
+    ui->connected_components->setChecked(false);
+}
+
+void MainWindow::on_connected_components_clicked()
+{
+    original_image_selected = false;
+    binarized_image_selected = false;
+    removed_staves_selected = false;
+    connected_components_selected = true;
+    ui->original_image->setChecked(false);
+    ui->binarized_image->setChecked(false);
+    ui->removed_staves->setChecked(false);
+
 }
