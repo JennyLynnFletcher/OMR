@@ -28,29 +28,36 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+
     class Score
     {
     private:
-        int output_x = 50;
-        int output_y = 50;
-        std::string filepath;
+        int output_x;
+        int output_y;
+        float contrast;
+        int brightness;
+        QString filepath;
+        int number_labels;
         std::vector<int> staves;
         cv::Mat original_image;
+        cv::Mat BC_image;
         cv::Mat binarized_image;
         cv::Mat removed_staves;
+        cv::Mat label_image;
         cv::Mat coloured_connected_components;
         std::vector<cv::Mat> elements;
         std::vector<cv::Mat> standardised_elements;
 
+
         void load_mat();
-        void brightness_contrast(cv::Mat image_to_edit);
-        void binarize(cv::Mat new_image);
-        int *histogram(cv::Mat image, int values[]);
-        void find_staves(cv::Mat new_image);
-        void remove_staves(cv::Mat image,std::vector<int> stave_values);
-        void find_connected_components(cv::Mat image);
-        void split_elements(cv::Mat image, cv::Mat label, int number_labels);
-        void standardise_elements(std::vector<cv::Mat> elements, int x, int y);
+        void brightness_contrast();
+        void binarize();
+        int *histogram(int values[]);
+        void find_staves();
+        void remove_staves();
+        void find_connected_components();
+        void split_elements();
+        void standardise_elements();
     public:
         std::vector<int> get_staves();
         cv::Mat get_original_image();
@@ -61,7 +68,8 @@ private:
         std::vector<cv::Mat> get_standardised_elements();
 
         void set_x_y(int x, int y);
-        void set_filepath(std::string filepath);
+        void set_filepath(QString input_filepath);
+        void set_brightness_contrast(float input_contrast, int input_brightness);
 
     };
 

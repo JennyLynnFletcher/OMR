@@ -19,44 +19,37 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-cv::Mat MainWindow::load_mat()
+void MainWindow::Score::load_mat()
 {
-    QString url = ui->filepath_input->text();
-    QPixmap img(url);
-    cv::Mat image_to_edit = cv::imread(url.toStdString());
-    cv::cvtColor(image_to_edit,image_to_edit,CV_BGR2GRAY);
-    return image_to_edit;
+    cv::Mat original_image = cv::imread(filepath.toStdString());
+    cv::cvtColor(original_image,original_image,CV_BGR2GRAY);
 }
 
-cv::Mat MainWindow::brightness_contrast(cv::Mat image_to_edit)
+void MainWindow::Score::brightness_contrast()
 {
-    float contrast = ui->contrast_slider->value();
-    int brightness = ui->brightness_slider->value();
-    cv::Mat new_image = cv::Mat::zeros( image_to_edit.size(), image_to_edit.type() );
-    for( int y = 0; y < image_to_edit.rows; ++y)
-       { for( int x = 0; x < image_to_edit.cols; ++x )
-            {
-            new_image.at<uchar>(y,x) =
-            cv::saturate_cast<uchar>( ((contrast*3/100)+1)*(image_to_edit.at<uchar>(y,x)) + brightness);
-           }
-       }
-    return new_image;
-}
-
-cv::Mat MainWindow::binarize(cv::Mat image)
-{
-
-    cv::adaptiveThreshold(image,image,255,cv::ADAPTIVE_THRESH_GAUSSIAN_C,cv::THRESH_BINARY,41,2);
-    return image;
-}
-
-int *MainWindow::histogram(cv::Mat image,int values[])
-{
-    for (int y = 0; y < image.rows; ++y)
-    {
-        for (int x = 0; x < image.cols; ++x)
+    cv::Mat BC_image = cv::Mat::zeros( original_image.size(), original_image.type() );
+    for( int y = 0; y < original_image.rows; ++y)
+    { for( int x = 0; x < original_image.cols; ++x )
         {
-            if (image.at<uchar>(y, x) == 0)
+            BC_image.at<uchar>(y,x) =
+                    cv::saturate_cast<uchar>( ((contrast*3/100)+1)*(original_image.at<uchar>(y,x)) + brightness);
+        }
+    }
+}
+
+void MainWindow::Score::binarize()
+{
+
+    cv::adaptiveThreshold(BC_image,binarized_image,255,cv::ADAPTIVE_THRESH_GAUSSIAN_C,cv::THRESH_BINARY,41,2);
+}
+
+int *MainWindow::Score::histogram(int values[])
+{
+    for (int y = 0; y < binarized_image.rows; ++y)
+    {
+        for (int x = 0; x < binarized_image.cols; ++x)
+        {
+            if (binarized_image.at<uchar>(y, x) == 0)
             {
                 values[y]++;
             }
@@ -65,63 +58,60 @@ int *MainWindow::histogram(cv::Mat image,int values[])
     return values;
 }
 
-std::vector<int> MainWindow::find_staves(cv::Mat new_image)
+void MainWindow::Score::find_staves()
 {
-    int values[new_image.rows] = {0};
-    *values = *histogram(new_image,values);
+    int values[binarized_image.rows] = {0};
+    *values = *histogram(values);
     std::vector<int> stave_values;
-    for (int i = 0; i < new_image.rows; ++i)
+    for (int i = 0; i < binarized_image.rows; ++i)
     {
-        if (values[i]> 0.8*new_image.cols)
+        if (values[i]> 0.8*binarized_image.cols)
         {
             stave_values.push_back(i);
         }
     }
-    return stave_values;
+    staves = stave_values;
 }
 
-cv::Mat MainWindow::remove_staves(cv::Mat image, std::vector<int> stave_values )
+void MainWindow::Score::remove_staves()
 {
-    for (int y = 0; y<(int)(stave_values.size()); ++y)
+    removed_staves = binarized_image;
+    for (int y = 0; y<(int)(staves.size()); ++y)
     {
-        for (int x = 0; x < image.cols; ++x)
+        for (int x = 0; x < removed_staves.cols; ++x)
         {
-            if (image.at<uchar>(stave_values[y]-1, x) == 255 || image.at<uchar>(stave_values[y]+1, x) == 255)
+            if (removed_staves.at<uchar>(staves[y]-1, x) == 255 || removed_staves.at<uchar>(staves[y]+1, x) == 255)
             {
-                image.at<uchar>(stave_values[y], x) = 255;
+                removed_staves.at<uchar>(staves[y], x) = 255;
             }
 
         }
     }
-    ui->image->setPixmap(QPixmap::fromImage(QImage(image.data, image.cols, image.rows, image.step, QImage::Format_RGB888)));
-    return image;
 }
 
-std::vector<cv::Mat> MainWindow::find_connected_components(cv::Mat image)
+void MainWindow::Score::find_connected_components()
 {
-    cv::bitwise_not(image,image);
-    cv::Mat labelImage(image.size(), CV_32S);
-    int number_labels = cv::connectedComponents(image, labelImage, 8);
+    cv::bitwise_not(removed_staves,removed_staves);
+    cv::Mat labelImage(removed_staves.size(), CV_32S);
+    number_labels = cv::connectedComponents(removed_staves, labelImage, 8);
     std::vector<cv::Vec3b> colors(number_labels);
     colors[0] = cv::Vec3b(0, 0, 0);
     for(int label = 1; label < number_labels; ++label){
         colors[label] = cv::Vec3b( (rand()&255), (rand()&255), (rand()&255) );
     }
-    cv::Mat new_image(image.size(), CV_8UC3);
-    for(int y = 0; y < new_image.rows; ++y){
-        for(int x = 0; x < new_image.cols; ++x){
+    cv::Mat coloured_connected_components (removed_staves.size(), CV_8UC3);
+    for(int y = 0; y < coloured_connected_components.rows; ++y){
+        for(int x = 0; x < coloured_connected_components.cols; ++x){
             int label = labelImage.at<int>(y, x);
-            cv::Vec3b &pixel = new_image.at<cv::Vec3b>(y, x);
+            cv::Vec3b &pixel = coloured_connected_components.at<cv::Vec3b>(y, x);
             pixel = colors[label];
         }
     }
-    ui->image->setPixmap(QPixmap::fromImage(QImage(new_image.data, new_image.cols, new_image.rows, new_image.step, QImage::Format_RGB888)));
-    return split_elements(image,labelImage,number_labels);
 }
 
-std::vector<cv::Mat> MainWindow::split_elements(cv::Mat image, cv::Mat label, int number_labels)
+void MainWindow::Score::split_elements()
 {
-    image.convertTo(image,CV_8U);
+    binarized_image.convertTo(removed_staves,CV_8U);
     std::vector<cv::Mat> elements(number_labels);
     for (int i = 0; i<number_labels; ++i)
     {
@@ -129,11 +119,11 @@ std::vector<cv::Mat> MainWindow::split_elements(cv::Mat image, cv::Mat label, in
         int min_x=-1;
         int max_y=0;
         int min_y=-1;
-        for (int y = 0; y<image.rows; ++y)
+        for (int y = 0; y<binarized_image.rows; ++y)
         {
-            for (int x = 0; x<image.cols; ++x)
+            for (int x = 0; x<binarized_image.cols; ++x)
             {
-                int label_present =label.at<int>(y,x);
+                int label_present =label_image.at<int>(y,x);
                 if (label_present == i)
                 {
                     if (x > max_x)
@@ -160,34 +150,85 @@ std::vector<cv::Mat> MainWindow::split_elements(cv::Mat image, cv::Mat label, in
         crop_area.y = min_y;
         crop_area.width = max_x - min_x;
         crop_area.height = max_y - min_y;
-        elements[i] = image(crop_area);
+        elements[i] = binarized_image(crop_area);
     }
-    return elements;
 }
 
-std::vector<cv::Mat> MainWindow::standardise_elements(std::vector<cv::Mat> elements, int x, int y)
+void MainWindow::Score::standardise_elements()
 {
-    std::vector<cv::Mat> standardised_elements;
     for (int i=1; i < (int)elements.size(); ++i)
     {
         cv::Mat temp_mat = elements[i];
         if (temp_mat.cols>temp_mat.rows)
         {
-            float scale_factor = ceil((double)x/temp_mat.cols);
-            cv::resize(temp_mat,temp_mat,cv::Size(x,y/scale_factor));
+            float scale_factor = ceil((double)output_x/temp_mat.cols);
+            cv::resize(temp_mat,temp_mat,cv::Size(output_x,output_y/scale_factor));
         }
         else
         {
-            float scale_factor = ceil((double)y/temp_mat.rows);
-            cv::resize(temp_mat,temp_mat,cv::Size(x/scale_factor,y));
+            float scale_factor = ceil((double)output_y/temp_mat.rows);
+            cv::resize(temp_mat,temp_mat,cv::Size(output_x/scale_factor,output_y));
         }
-        cv::copyMakeBorder(temp_mat,temp_mat,0,y-temp_mat.rows,0,x-temp_mat.cols,cv::BORDER_CONSTANT);
+        cv::copyMakeBorder(temp_mat,temp_mat,0,output_y-temp_mat.rows,0,output_x-temp_mat.cols,cv::BORDER_CONSTANT);
         standardised_elements.push_back(temp_mat);
         std::string filename = "/home/jenny/Documents/Code/OMR/Elements/element" + std::to_string(i) + ".jpg";
         cv::imwrite(filename,standardised_elements[i-1]);
     }
+}
+
+std::vector<int> MainWindow::Score::get_staves()
+{
+    return staves;
+}
+
+cv::Mat MainWindow::Score::get_original_image()
+{
+    return original_image;
+}
+
+cv::Mat MainWindow::Score::get_binarized_image()
+{
+    return binarized_image;
+}
+
+cv::Mat MainWindow::Score::get_removed_staves()
+{
+    return removed_staves;
+}
+
+cv::Mat MainWindow::Score::get_connected_components()
+{
+    return coloured_connected_components;
+}
+
+std::vector<cv::Mat> MainWindow::Score::get_elements()
+{
+    return elements;
+}
+
+std::vector<cv::Mat> MainWindow::Score::get_standardised_elements()
+{
     return standardised_elements;
 }
+
+void MainWindow::Score::set_x_y(int x, int y)
+{
+    output_x = x;
+    output_y = y;
+}
+
+void MainWindow::Score::set_filepath(QString input_filepath)
+{
+    filepath = input_filepath;
+}
+
+void MainWindow::Score::set_brightness_contrast(float input_contrast, int input_brightness)
+{
+    contrast = input_contrast;
+    brightness = input_brightness;
+}
+
+
 
 void MainWindow::on_enter_button_clicked()
 {
@@ -198,10 +239,6 @@ void MainWindow::on_enter_button_clicked()
 
 void MainWindow::on_remove_button_clicked()
 {
-    cv::Mat image = load_mat();
-    image = brightness_contrast(image);
-    image = binarize(image);
-    image = remove_staves(image,find_staves(image));
-    std::vector<cv::Mat> elements = find_connected_components(image);
-    elements = standardise_elements(elements,70,70);
+    QString url = ui->filepath_input->text();
+    QPixmap img(url);
 }
