@@ -122,8 +122,8 @@ void Score::find_connected_components()
 
 void Score::split_elements()
 {
+    elements.clear();
     removed_staves.convertTo(removed_staves,CV_8U);
-    std::vector<cv::Mat> elements(number_labels);
     for (int i = 0; i<number_labels; ++i)
     {
         int max_x=0;
@@ -159,9 +159,9 @@ void Score::split_elements()
         cv::Rect crop_area;
         crop_area.x = min_x;
         crop_area.y = min_y;
-        crop_area.width = max_x - min_x;
-        crop_area.height = max_y - min_y;
-        elements[i] = removed_staves(crop_area);
+        crop_area.width = 1+ max_x - min_x;
+        crop_area.height = 1 + max_y - min_y;
+        elements.push_back(removed_staves(crop_area));
     }
 }
 
