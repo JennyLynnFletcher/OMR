@@ -30,7 +30,8 @@ SOURCES += \
         OMR.cpp
 
 HEADERS += \
-        OMR.h
+        OMR.h \
+    score_class.h
 
 FORMS += \
         mainwindow.ui

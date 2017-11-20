@@ -19,13 +19,22 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::Score::load_mat()
+void Score::load_mat()
 {
     original_image = cv::imread(filepath.toStdString());
-    cv::cvtColor(original_image,original_image,CV_BGR2GRAY);
+    if (original_image.empty()== false)
+    {
+        cv::cvtColor(original_image,original_image,CV_BGR2GRAY);
+        image_exists = true;
+    }
+    else
+    {
+        image_exists = false;
+    }
+
 }
 
-void MainWindow::Score::brightness_contrast()
+void Score::brightness_contrast()
 {
     BC_image = cv::Mat::zeros(original_image.size(), original_image.type());
     for( int y = 0; y < original_image.rows; ++y)
@@ -37,13 +46,13 @@ void MainWindow::Score::brightness_contrast()
     }
 }
 
-void MainWindow::Score::binarize()
+void Score::binarize()
 {
 
     cv::adaptiveThreshold(BC_image,binarized_image,255,cv::ADAPTIVE_THRESH_GAUSSIAN_C,cv::THRESH_BINARY,41,2);
 }
 
-int *MainWindow::Score::histogram(int values[])
+int *Score::histogram(int values[])
 {
     for (int y = 0; y < binarized_image.rows; ++y)
     {
@@ -58,7 +67,7 @@ int *MainWindow::Score::histogram(int values[])
     return values;
 }
 
-void MainWindow::Score::find_staves()
+void Score::find_staves()
 {
     int values[binarized_image.rows] = {0};
     *values = *histogram(values);
@@ -73,7 +82,7 @@ void MainWindow::Score::find_staves()
     staves = stave_values;
 }
 
-void MainWindow::Score::remove_staves()
+void Score::remove_staves()
 {
     removed_staves = binarized_image;
     for (int y = 0; y<(int)(staves.size()); ++y)
@@ -89,7 +98,7 @@ void MainWindow::Score::remove_staves()
     }
 }
 
-void MainWindow::Score::find_connected_components()
+void Score::find_connected_components()
 {
     cv::bitwise_not(removed_staves,removed_staves);
     cv::Mat temp(removed_staves.size(), CV_32S);
@@ -111,7 +120,7 @@ void MainWindow::Score::find_connected_components()
     }
 }
 
-void MainWindow::Score::split_elements()
+void Score::split_elements()
 {
     binarized_image.convertTo(removed_staves,CV_8U);
     std::vector<cv::Mat> elements(number_labels);
@@ -156,7 +165,7 @@ void MainWindow::Score::split_elements()
     }
 }
 
-void MainWindow::Score::standardise_elements()
+void Score::standardise_elements()
 {
     for (int i=1; i < (int)elements.size(); ++i)
     {
@@ -178,66 +187,83 @@ void MainWindow::Score::standardise_elements()
     }
 }
 
-std::vector<int> MainWindow::Score::get_staves()
+std::vector<int> Score::get_staves()
 {
     return staves;
 }
 
-cv::Mat MainWindow::Score::get_original_image()
+cv::Mat Score::get_original_image()
 {
     return original_image;
 }
 
-cv::Mat MainWindow::Score::get_binarized_image()
+cv::Mat Score::get_binarized_image()
 {
     return binarized_image;
 }
 
-cv::Mat MainWindow::Score::get_removed_staves()
+cv::Mat Score::get_removed_staves()
 {
     return removed_staves;
 }
 
-cv::Mat MainWindow::Score::get_connected_components()
+cv::Mat Score::get_connected_components()
 {
     return coloured_connected_components;
 }
 
-std::vector<cv::Mat> MainWindow::Score::get_elements()
+std::vector<cv::Mat> Score::get_elements()
 {
     return elements;
 }
 
-std::vector<cv::Mat> MainWindow::Score::get_standardised_elements()
+std::vector<cv::Mat> Score::get_standardised_elements()
 {
     return standardised_elements;
 }
 
-void MainWindow::Score::set_x_y(int x, int y)
+bool Score::get_image_exists()
+{
+    return image_exists;
+}
+
+void Score::set_x_y(int x, int y)
 {
     output_x = x;
     output_y = y;
 }
 
-void MainWindow::Score::set_filepath(QString input_filepath)
+void Score::set_filepath(QString input_filepath)
 {
     filepath = input_filepath;
 }
 
-void MainWindow::Score::set_brightness_contrast(float input_contrast, int input_brightness)
+void Score::set_brightness_contrast(float input_contrast, int input_brightness)
 {
     contrast = input_contrast;
     brightness = input_brightness;
 }
 
-void MainWindow::Score::proccess_image()
+void Score::proccess_image()
 {
-    load_mat();
-    brightness_contrast();
-    binarize();
-    find_staves();
-    remove_staves();
-    find_connected_components();
+    if (image_exists == true)
+    {
+        load_mat();
+        brightness_contrast();
+        binarize();
+        find_staves();
+        remove_staves();
+        find_connected_components();
+    }
+}
+
+void Score::split_image()
+{
+    if (image_exists == true)
+    {
+        split_elements();
+        standardise_elements();
+    }
 }
 
 
@@ -247,7 +273,7 @@ void MainWindow::on_enter_button_clicked()
     QPixmap img(url);
     ui->image->setFixedSize(img.size());
     ui->image->setPixmap(img);
-    MainWindow::Score score;
+    Score score;
     score_to_read = score;
     score_to_read.set_filepath(url);
     score_to_read.set_x_y(50,50);
@@ -269,32 +295,29 @@ void MainWindow::on_update_image_clicked()
     if (original_image_selected == true)
     {
         cv::Mat new_image = score_to_read.get_original_image();
-        //new_image.convertTo(new_image,CV_8UC3);
         ui->image->setPixmap(QPixmap::fromImage(QImage(new_image.data, new_image.cols, new_image.rows, new_image.step, QImage::Format_Grayscale8)));
     }
     if (binarized_image_selected == true)
     {
         cv::Mat new_image = score_to_read.get_binarized_image();
-        //new_image.convertTo(new_image,CV_8UC2);
         ui->image->setPixmap(QPixmap::fromImage(QImage(new_image.data, new_image.cols, new_image.rows, new_image.step, QImage::Format_Grayscale8)));
     }
     if (removed_staves_selected == true)
     {
         cv::Mat new_image = score_to_read.get_removed_staves();
-        //new_image.convertTo(new_image,CV_8UC2);
         ui->image->setPixmap(QPixmap::fromImage(QImage(new_image.data, new_image.cols, new_image.rows, new_image.step, QImage::Format_Grayscale8)));
     }
     if (connected_components_selected == true)
     {
         cv::Mat new_image = score_to_read.get_connected_components();
-        //new_image.convertTo(new_image,CV_8UC3);
         ui->image->setPixmap(QPixmap::fromImage(QImage(new_image.data, new_image.cols, new_image.rows, new_image.step, QImage::Format_RGB888)));
     }
 }
 
 void MainWindow::on_go_button_clicked()
 {
-
+    on_update_image_clicked();
+    score_to_read.split_image();
 }
 
 void MainWindow::on_original_image_clicked()
