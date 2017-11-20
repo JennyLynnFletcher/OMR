@@ -21,13 +21,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::Score::load_mat()
 {
-    cv::Mat original_image = cv::imread(filepath.toStdString());
+    original_image = cv::imread(filepath.toStdString());
     cv::cvtColor(original_image,original_image,CV_BGR2GRAY);
 }
 
 void MainWindow::Score::brightness_contrast()
 {
-    cv::Mat BC_image = cv::Mat::zeros( original_image.size(), original_image.type() );
+    BC_image = cv::Mat::zeros(original_image.size(), original_image.type());
     for( int y = 0; y < original_image.rows; ++y)
     { for( int x = 0; x < original_image.cols; ++x )
         {
@@ -92,17 +92,19 @@ void MainWindow::Score::remove_staves()
 void MainWindow::Score::find_connected_components()
 {
     cv::bitwise_not(removed_staves,removed_staves);
-    cv::Mat labelImage(removed_staves.size(), CV_32S);
-    number_labels = cv::connectedComponents(removed_staves, labelImage, 8);
+    cv::Mat temp(removed_staves.size(), CV_32S);
+    label_image = temp;
+    number_labels = cv::connectedComponents(removed_staves, label_image, 8);
     std::vector<cv::Vec3b> colors(number_labels);
     colors[0] = cv::Vec3b(0, 0, 0);
     for(int label = 1; label < number_labels; ++label){
         colors[label] = cv::Vec3b( (rand()&255), (rand()&255), (rand()&255) );
     }
-    cv::Mat coloured_connected_components (removed_staves.size(), CV_8UC3);
+    cv::Mat mat(removed_staves.size(), CV_8UC3);
+    coloured_connected_components = mat;
     for(int y = 0; y < coloured_connected_components.rows; ++y){
         for(int x = 0; x < coloured_connected_components.cols; ++x){
-            int label = labelImage.at<int>(y, x);
+            int label = label_image.at<int>(y, x);
             cv::Vec3b &pixel = coloured_connected_components.at<cv::Vec3b>(y, x);
             pixel = colors[label];
         }
@@ -228,6 +230,16 @@ void MainWindow::Score::set_brightness_contrast(float input_contrast, int input_
     brightness = input_brightness;
 }
 
+void MainWindow::Score::proccess_image()
+{
+    load_mat();
+    brightness_contrast();
+    binarize();
+    find_staves();
+    remove_staves();
+    find_connected_components();
+}
+
 
 void MainWindow::on_enter_button_clicked()
 {
@@ -235,20 +247,54 @@ void MainWindow::on_enter_button_clicked()
     QPixmap img(url);
     ui->image->setFixedSize(img.size());
     ui->image->setPixmap(img);
+    MainWindow::Score score;
+    score_to_read = score;
+    score_to_read.set_filepath(url);
+    score_to_read.set_x_y(50,50);
 }
 
 void MainWindow::on_update_image_clicked()
 {
-    if (true)
+    if (brightness_slider_value == -1 && contrast_slider_value == -1)
     {
-
+        on_enter_button_clicked();
+    }
+    if (brightness_slider_value != ui->brightness_slider->value() || contrast_slider_value != ui->contrast_slider->value())
+    {
+        brightness_slider_value = ui->brightness_slider->value();
+        contrast_slider_value = ui->contrast_slider->value();
+        score_to_read.set_brightness_contrast(contrast_slider_value,brightness_slider_value);
+        score_to_read.proccess_image();
+    }
+    if (original_image_selected == true)
+    {
+        cv::Mat new_image = score_to_read.get_original_image();
+        //new_image.convertTo(new_image,CV_8UC3);
+        ui->image->setPixmap(QPixmap::fromImage(QImage(new_image.data, new_image.cols, new_image.rows, new_image.step, QImage::Format_Grayscale8)));
+    }
+    if (binarized_image_selected == true)
+    {
+        cv::Mat new_image = score_to_read.get_binarized_image();
+        //new_image.convertTo(new_image,CV_8UC2);
+        ui->image->setPixmap(QPixmap::fromImage(QImage(new_image.data, new_image.cols, new_image.rows, new_image.step, QImage::Format_Grayscale8)));
+    }
+    if (removed_staves_selected == true)
+    {
+        cv::Mat new_image = score_to_read.get_removed_staves();
+        //new_image.convertTo(new_image,CV_8UC2);
+        ui->image->setPixmap(QPixmap::fromImage(QImage(new_image.data, new_image.cols, new_image.rows, new_image.step, QImage::Format_Grayscale8)));
+    }
+    if (connected_components_selected == true)
+    {
+        cv::Mat new_image = score_to_read.get_connected_components();
+        //new_image.convertTo(new_image,CV_8UC3);
+        ui->image->setPixmap(QPixmap::fromImage(QImage(new_image.data, new_image.cols, new_image.rows, new_image.step, QImage::Format_RGB888)));
     }
 }
 
 void MainWindow::on_go_button_clicked()
 {
-    QString url = ui->filepath_input->text();
-    QPixmap img(url);
+
 }
 
 void MainWindow::on_original_image_clicked()

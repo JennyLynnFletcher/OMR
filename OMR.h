@@ -42,6 +42,8 @@ private:
     bool binarized_image_selected = false;
     bool removed_staves_selected = false;
     bool connected_components_selected = false;
+    float contrast_slider_value = -1;
+    int brightness_slider_value = -1;
 
     class Score
     {
@@ -85,8 +87,10 @@ private:
         void set_filepath(QString input_filepath);
         void set_brightness_contrast(float input_contrast, int input_brightness);
 
-    };
+        void proccess_image();
 
+    };
+    Score score_to_read;
 };
 
 #endif // OMR_H
