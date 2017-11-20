@@ -84,7 +84,7 @@ void Score::find_staves()
 
 void Score::remove_staves()
 {
-    removed_staves = binarized_image;
+    binarized_image.copyTo(removed_staves);
     for (int y = 0; y<(int)(staves.size()); ++y)
     {
         for (int x = 0; x < removed_staves.cols; ++x)
@@ -101,16 +101,16 @@ void Score::remove_staves()
 void Score::find_connected_components()
 {
     cv::bitwise_not(removed_staves,removed_staves);
-    cv::Mat temp(removed_staves.size(), CV_32S);
-    label_image = temp;
+    cv::Mat label_image_empty(removed_staves.size(), CV_32S);
+    label_image = label_image_empty;
     number_labels = cv::connectedComponents(removed_staves, label_image, 8);
     std::vector<cv::Vec3b> colors(number_labels);
     colors[0] = cv::Vec3b(0, 0, 0);
     for(int label = 1; label < number_labels; ++label){
         colors[label] = cv::Vec3b( (rand()&255), (rand()&255), (rand()&255) );
     }
-    cv::Mat mat(removed_staves.size(), CV_8UC3);
-    coloured_connected_components = mat;
+    cv::Mat coloured_connected_components_empty(removed_staves.size(), CV_8UC3);
+    coloured_connected_components = coloured_connected_components_empty;
     for(int y = 0; y < coloured_connected_components.rows; ++y){
         for(int x = 0; x < coloured_connected_components.cols; ++x){
             int label = label_image.at<int>(y, x);
@@ -122,7 +122,7 @@ void Score::find_connected_components()
 
 void Score::split_elements()
 {
-    binarized_image.convertTo(removed_staves,CV_8U);
+    removed_staves.convertTo(removed_staves,CV_8U);
     std::vector<cv::Mat> elements(number_labels);
     for (int i = 0; i<number_labels; ++i)
     {
@@ -130,9 +130,9 @@ void Score::split_elements()
         int min_x=-1;
         int max_y=0;
         int min_y=-1;
-        for (int y = 0; y<binarized_image.rows; ++y)
+        for (int y = 0; y<removed_staves.rows; ++y)
         {
-            for (int x = 0; x<binarized_image.cols; ++x)
+            for (int x = 0; x<removed_staves.cols; ++x)
             {
                 int label_present =label_image.at<int>(y,x);
                 if (label_present == i)
@@ -161,7 +161,7 @@ void Score::split_elements()
         crop_area.y = min_y;
         crop_area.width = max_x - min_x;
         crop_area.height = max_y - min_y;
-        elements[i] = binarized_image(crop_area);
+        elements[i] = removed_staves(crop_area);
     }
 }
 
@@ -294,23 +294,23 @@ void MainWindow::on_update_image_clicked()
     }
     if (original_image_selected == true)
     {
-        cv::Mat new_image = score_to_read.get_original_image();
-        ui->image->setPixmap(QPixmap::fromImage(QImage(new_image.data, new_image.cols, new_image.rows, new_image.step, QImage::Format_Grayscale8)));
+        cv::Mat original_image = score_to_read.get_original_image();
+        ui->image->setPixmap(QPixmap::fromImage(QImage(original_image.data, original_image.cols, original_image.rows, original_image.step, QImage::Format_Grayscale8)));
     }
     if (binarized_image_selected == true)
     {
-        cv::Mat new_image = score_to_read.get_binarized_image();
-        ui->image->setPixmap(QPixmap::fromImage(QImage(new_image.data, new_image.cols, new_image.rows, new_image.step, QImage::Format_Grayscale8)));
+        cv::Mat binarized_image = score_to_read.get_binarized_image();
+        ui->image->setPixmap(QPixmap::fromImage(QImage(binarized_image.data, binarized_image.cols, binarized_image.rows, binarized_image.step, QImage::Format_Grayscale8)));
     }
     if (removed_staves_selected == true)
     {
-        cv::Mat new_image = score_to_read.get_removed_staves();
-        ui->image->setPixmap(QPixmap::fromImage(QImage(new_image.data, new_image.cols, new_image.rows, new_image.step, QImage::Format_Grayscale8)));
+        cv::Mat removed_staves_image = score_to_read.get_removed_staves();
+        ui->image->setPixmap(QPixmap::fromImage(QImage(removed_staves_image.data, removed_staves_image.cols, removed_staves_image.rows, removed_staves_image.step, QImage::Format_Grayscale8)));
     }
     if (connected_components_selected == true)
     {
-        cv::Mat new_image = score_to_read.get_connected_components();
-        ui->image->setPixmap(QPixmap::fromImage(QImage(new_image.data, new_image.cols, new_image.rows, new_image.step, QImage::Format_RGB888)));
+        cv::Mat connected_components_image = score_to_read.get_connected_components();
+        ui->image->setPixmap(QPixmap::fromImage(QImage(connected_components_image.data, connected_components_image.cols, connected_components_image.rows, connected_components_image.step, QImage::Format_RGB888)));
     }
 }
 
