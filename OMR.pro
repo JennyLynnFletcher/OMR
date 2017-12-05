@@ -27,7 +27,8 @@ LIBS += -L/usr/local/lib -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lope
 
 SOURCES += \
         main.cpp \
-        OMR.cpp
+        OMR.cpp \
+    svm.cpp
 
 HEADERS += \
         OMR.h \

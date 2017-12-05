@@ -89,7 +89,7 @@
      </layout>
     </widget>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>11</x>
@@ -102,7 +102,7 @@
      <item>
       <widget class="QLineEdit" name="filepath_input">
        <property name="text">
-        <string>/home/jenny/Documents/Code/Qt/test3/score.png</string>
+        <string>/home/jenny/Documents/Code/Coursework/OMR/score.png</string>
        </property>
       </widget>
      </item>
@@ -115,7 +115,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>460</x>
