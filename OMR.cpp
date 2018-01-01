@@ -1,11 +1,5 @@
 #include "OMR.h"
 #include "ui_mainwindow.h"
-#include <iostream>
-#include <vector>
-#include <math.h>
-#include <QPixmap>
-#include <QtCore>
-#include <cv.h>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -277,6 +271,7 @@ void MainWindow::on_enter_button_clicked()
     score_to_read = score;
     score_to_read.set_filepath(url);
     score_to_read.set_x_y(50,50);
+
 }
 
 void MainWindow::on_update_image_clicked()

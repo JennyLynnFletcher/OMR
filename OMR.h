@@ -5,6 +5,12 @@
 #include <string>
 #include <QWidget>
 #include <opencv2/opencv.hpp>
+#include <iostream>
+#include <math.h>
+#include <QPixmap>
+#include <QtCore>
+#include <cv.h>
+
 
 #include <QMainWindow>
 #include <score_class.h>
