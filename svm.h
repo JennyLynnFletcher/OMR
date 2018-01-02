@@ -13,14 +13,16 @@
 #include <ml.h>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/objdetect.hpp>
+#include <fstream>
 
 
 class SVM
 {
 private:
-    std::vector<cv::Mat> load_data(std::string path);
+    std::vector<int> load_labels(std::string path);
+    std::vector<cv::Mat> load_images(std::string path);
     std::vector<std::vector<float>>CreateTrainTestHOG(std::vector<cv::Mat> &cells);
-    cv::Mat ConvertVectortoMatrix(std::vector<std::vector<float> > &HOG, cv::Mat &Mat);
+    cv::Mat ConvertVectortoMatrix(std::vector<std::vector<float> > &HOG);
     void getSVMParams(cv::ml::SVM *svm);
     cv::Ptr<cv::ml::SVM> svmInit(float C, float gamma);
     void svmTrain(cv::Ptr<cv::ml::SVM> svm, cv::Mat &trainMat, std::vector<int> &trainLabels);

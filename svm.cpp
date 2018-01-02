@@ -1,6 +1,20 @@
 #include "svm.h"
 
-std::vector<cv::Mat> SVM::load_data(std::string path)
+
+std::vector<int> SVM::load_labels(std::string path)
+{
+    std::vector<int> labels;
+    std::ifstream label_file(path);
+    std::string line;
+    while (std::getline(label_file, line))
+        {
+            labels.push_back(std::stoi(line));
+        }
+    return labels;
+}
+
+
+std::vector<cv::Mat> SVM::load_images(std::string path)
 {
         DIR*    dir;
         dirent* pdir;
@@ -12,12 +26,13 @@ std::vector<cv::Mat> SVM::load_data(std::string path)
         {
             files.push_back(pdir->d_name);
         }
-        std::cout<<files[0]<<std::endl;
-
         std::vector<cv::Mat> images;
         for (int i = 0; i < int(files.size());i++)
         {
-           images.push_back(cv::imread(files[i]));
+           if (cv::imread(path + files[i]).empty() == false)
+           {
+            images.push_back(cv::imread(path + files[i]));
+           }
         }
 
         return images;
@@ -38,17 +53,18 @@ std::vector<std::vector<float>> SVM::CreateTrainTestHOG(std::vector<cv::Mat> &ce
 }
 
 
-cv::Mat SVM::ConvertVectortoMatrix(std::vector<std::vector<float> > &HOG, cv::Mat &Mat)
+cv::Mat SVM::ConvertVectortoMatrix(std::vector<std::vector<float>> &HOG)
 {
 
     int descriptor_size = HOG[0].size();
+    cv::Mat mat(HOG.size(),descriptor_size,CV_32FC1);
 
     for(int i = 0;i<int(HOG.size());i++){
         for(int j = 0;j<descriptor_size;j++){
-           Mat.at<float>(i,j) = HOG[i][j];
+           mat.at<float>(i,j) = HOG[i][j];
         }
     }
-    return Mat;
+    return mat;
 }
 
 void SVM::getSVMParams(cv::ml::SVM *svm)
@@ -76,7 +92,7 @@ void SVM::svmTrain(cv::Ptr<cv::ml::SVM> svm, cv::Mat &trainMat, std::vector<int>
 {
   cv::Ptr<cv::ml::TrainData> td = cv::ml::TrainData::create(trainMat, cv::ml::ROW_SAMPLE, trainLabels);
   svm->train(td);
-  svm->save("results/OMR_SVM_Results.yml");
+  svm->save("/home/jenny/Documents/Code/Coursework/OMR/results/OMR_SVM_Results.yml");
 }
 
 void SVM::svmPredict(cv::Ptr<cv::ml::SVM> svm, cv::Mat &testResponse, cv::Mat &testMat )
@@ -96,12 +112,12 @@ void SVM::SVMevaluate(cv::Mat &testResponse, float &count, float &accuracy, std:
 
 void SVM::train_SVM()
 {
-    std::vector<cv::Mat> trainCells = load_data("/home/jenny/Documents/Code/Coursework/OMR/Train_Data/");
-    std::vector<int> trainLabels;
+    std::vector<cv::Mat> trainCells = load_images("/home/jenny/Documents/Code/Coursework/OMR/Train_Data/");
+    std::vector<int> trainLabels = load_labels("/home/jenny/Documents/Code/Coursework/OMR/train_values");
 
     std::vector<std::vector<float>> trainHOG = CreateTrainTestHOG(trainCells);
 
-    cv::Mat trainMat = ConvertVectortoMatrix(trainHOG,trainMat);
+    cv::Mat trainMat = ConvertVectortoMatrix(trainHOG);
 
     float C = 12.5, gamma = 0.5;
 
@@ -113,25 +129,25 @@ void SVM::train_SVM()
 
 void SVM::classify_SVM()
 {
-    cv::Ptr<cv::ml::SVM> model = cv::ml::SVM::load("results/OMR_SVM_Results.yml");
-    std::vector<cv::Mat> testCells = load_data("/home/jenny/Documents/Code/Coursework/OMR/Elements/");
+    cv::Ptr<cv::ml::SVM> model = cv::ml::SVM::load("/home/jenny/Documents/Code/Coursework/OMR/results/OMR_SVM_Results.yml");
+    std::vector<cv::Mat> testCells = load_images("/home/jenny/Documents/Code/Coursework/OMR/Elements/");
     std::vector<std::vector<float>> testHOG = CreateTrainTestHOG(testCells);
-    cv::Mat testMat = ConvertVectortoMatrix(testHOG,testMat);
+    cv::Mat testMat = ConvertVectortoMatrix(testHOG);
     cv::Mat testResponse;
     svmPredict(model, testResponse, testMat);
 }
 
 void SVM::run_SVM()
 {
-    std::vector<cv::Mat> trainCells = load_data("/home/jenny/Documents/Code/Coursework/OMR/Train_Data/");
-    std::vector<cv::Mat> testCells = load_data("/home/jenny/Documents/Code/Coursework/OMR/Elements/");
-    std::vector<int> trainLabels;
+    std::vector<cv::Mat> trainCells = load_images("/home/jenny/Documents/Code/Coursework/OMR/Train_Data/");
+    std::vector<int> trainLabels = load_labels("/home/jenny/Documents/Code/Coursework/OMR/train_values");
+    std::vector<cv::Mat> testCells = load_images("/home/jenny/Documents/Code/Coursework/OMR/Elements/");
 
     std::vector<std::vector<float>> trainHOG = CreateTrainTestHOG(trainCells);
     std::vector<std::vector<float>> testHOG = CreateTrainTestHOG(testCells);
 
-    cv::Mat trainMat = ConvertVectortoMatrix(trainHOG,trainMat);
-    cv::Mat testMat = ConvertVectortoMatrix(testHOG,testMat);
+    cv::Mat trainMat = ConvertVectortoMatrix(trainHOG);
+    cv::Mat testMat = ConvertVectortoMatrix(testHOG);
 
     float C = 12.5, gamma = 0.5;
 
