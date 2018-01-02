@@ -1,6 +1,7 @@
 #ifndef SCORE_CLASS_H
 #define SCORE_CLASS_H
 
+#include <svm.h>
 class Score
 {
 private:
@@ -32,6 +33,7 @@ private:
     void split_elements();
     void standardise_elements();
 public:
+    SVM svm;
     std::vector<int> get_staves();
     cv::Mat get_original_image();
     cv::Mat get_binarized_image();

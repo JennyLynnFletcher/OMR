@@ -177,7 +177,9 @@ void Score::standardise_elements()
         }
         cv::copyMakeBorder(temp_mat,temp_mat,0,output_y-temp_mat.rows,0,output_x-temp_mat.cols,cv::BORDER_CONSTANT);
         standardised_elements.push_back(temp_mat);
-        std::string filename = "/home/jenny/Documents/Code/Coursework/OMR/Elements/element" + std::to_string(i) + ".png";
+        std::string number_leading_zero = std::to_string(i);
+        number_leading_zero.insert(number_leading_zero.begin(), 5 - number_leading_zero.length(), '0');
+        std::string filename = "/home/jenny/Documents/Code/Coursework/OMR/Elements/element" + number_leading_zero + ".png";
         cv::imwrite(filename,standardised_elements[i-1]);
     }
 }
@@ -314,6 +316,8 @@ void MainWindow::on_go_button_clicked()
 {
     on_update_image_clicked();
     score_to_read.split_image();
+    score_to_read.svm.classify_SVM();
+
 }
 
 void MainWindow::on_original_image_clicked()
@@ -363,6 +367,5 @@ void MainWindow::on_connected_components_clicked()
 
 void MainWindow::on_svm_train_clicked()
 {
-    SVM svm;
-    svm.train_SVM();
+    score_to_read.svm.train_SVM();
 }

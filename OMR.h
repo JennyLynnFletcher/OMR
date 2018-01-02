@@ -10,6 +10,7 @@
 #include <QPixmap>
 #include <QtCore>
 #include <cv.h>
+#include <stdio.h>
 
 
 #include <QMainWindow>

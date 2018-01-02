@@ -21,13 +21,13 @@ class SVM
 private:
     std::vector<int> load_labels(std::string path);
     std::vector<cv::Mat> load_images(std::string path);
-    std::vector<std::vector<float>>CreateTrainTestHOG(std::vector<cv::Mat> &cells);
-    cv::Mat ConvertVectortoMatrix(std::vector<std::vector<float> > &HOG);
-    void getSVMParams(cv::ml::SVM *svm);
-    cv::Ptr<cv::ml::SVM> svmInit(float C, float gamma);
-    void svmTrain(cv::Ptr<cv::ml::SVM> svm, cv::Mat &trainMat, std::vector<int> &trainLabels);
-    void svmPredict(cv::Ptr<cv::ml::SVM> svm, cv::Mat &testResponse, cv::Mat &testMat );
-    void SVMevaluate(cv::Mat &testResponse, float &count, float &accuracy, std::vector<int> &testLabels);
+    std::vector<std::vector<float>>create_train_test_HOG(std::vector<cv::Mat> &cells);
+    cv::Mat convert_vector_to_matrix(std::vector<std::vector<float> > &HOG);
+    void get_SVM_params(cv::ml::SVM *svm);
+    cv::Ptr<cv::ml::SVM> svm_init(float C, float gamma);
+    void svm_train(cv::Ptr<cv::ml::SVM> svm, cv::Mat &train_mat, std::vector<int> &train_labels);
+    void svm_predict(cv::Ptr<cv::ml::SVM> svm, cv::Mat &test_response, cv::Mat &test_mat );
+    void SVM_evaluate(cv::Mat &test_response, float &count, float &accuracy, std::vector<int> &test_labels);
 public:
     void run_SVM();
     void classify_SVM();
