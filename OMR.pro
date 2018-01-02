@@ -28,7 +28,8 @@ LIBS += -L/usr/local/lib -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lope
 SOURCES += \
         main.cpp \
         OMR.cpp \
-    svm.cpp
+    svm.cpp \
+    score.cpp
 
 HEADERS += \
         OMR.h \
@@ -38,32 +39,4 @@ HEADERS += \
 FORMS += \
         mainwindow.ui
 
-DISTFILES += \
-    Train_Data/element1.jpg \
-    Train_Data/element10.jpg \
-    Train_Data/element11.jpg \
-    Train_Data/element12.jpg \
-    Train_Data/element13.jpg \
-    Train_Data/element14.jpg \
-    Train_Data/element15.jpg \
-    Train_Data/element16.jpg \
-    Train_Data/element17.jpg \
-    Train_Data/element18.jpg \
-    Train_Data/element19.jpg \
-    Train_Data/element2.jpg \
-    Train_Data/element20.jpg \
-    Train_Data/element21.jpg \
-    Train_Data/element22.jpg \
-    Train_Data/element23.jpg \
-    Train_Data/element24.jpg \
-    Train_Data/element25.jpg \
-    Train_Data/element26.jpg \
-    Train_Data/element27.jpg \
-    Train_Data/element28.jpg \
-    Train_Data/element3.jpg \
-    Train_Data/element4.jpg \
-    Train_Data/element5.jpg \
-    Train_Data/element6.jpg \
-    Train_Data/element7.jpg \
-    Train_Data/element8.jpg \
-    Train_Data/element9.jpg
+

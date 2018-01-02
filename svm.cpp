@@ -33,7 +33,6 @@ std::vector<cv::Mat> SVM::load_images(std::string path)
            if (cv::imread(path + files[i]).empty() == false)
            {
             images.push_back(cv::imread(path + files[i]));
-            std::cout<<files[i]<<std::endl;
            }
         }
 
