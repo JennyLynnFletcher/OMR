@@ -201,7 +201,7 @@
      <item>
       <widget class="QRadioButton" name="connected_components">
        <property name="text">
-        <string>Connected Components</string>
+        <string>Co&amp;nnected Components</string>
        </property>
       </widget>
      </item>
@@ -213,6 +213,19 @@
       </widget>
      </item>
     </layout>
+   </widget>
+   <widget class="QPushButton" name="svm_train">
+    <property name="geometry">
+     <rect>
+      <x>460</x>
+      <y>350</y>
+      <width>171</width>
+      <height>34</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>SVM Train</string>
+    </property>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>

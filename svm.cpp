@@ -1,18 +1,5 @@
 #include "svm.h"
 
-#include <iostream>
-#include <vector>
-#include <math.h>
-#include <QPixmap>
-#include <opencv2/opencv.hpp>
-#include <QtCore>
-#include <iostream>
-#include <dirent.h>
-#include <cv.h>
-#include <ml.h>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/objdetect.hpp>
-
 std::vector<cv::Mat> SVM::load_data(std::string path)
 {
         DIR*    dir;
@@ -21,7 +8,7 @@ std::vector<cv::Mat> SVM::load_data(std::string path)
 
         dir = opendir(path.c_str());
 
-        while (pdir = readdir(dir))
+        while ((pdir = readdir(dir)))
         {
             files.push_back(pdir->d_name);
         }
@@ -107,12 +94,37 @@ void SVM::SVMevaluate(cv::Mat &testResponse, float &count, float &accuracy, std:
   accuracy = (count/testResponse.rows)*100;
 }
 
+void SVM::train_SVM()
+{
+    std::vector<cv::Mat> trainCells = load_data("/home/jenny/Documents/Code/Coursework/OMR/Train_Data/");
+    std::vector<int> trainLabels;
 
+    std::vector<std::vector<float>> trainHOG = CreateTrainTestHOG(trainCells);
+
+    cv::Mat trainMat = ConvertVectortoMatrix(trainHOG,trainMat);
+
+    float C = 12.5, gamma = 0.5;
+
+    cv::Mat testResponse;
+    cv::Ptr<cv::ml::SVM> model = svmInit(C, gamma);
+
+    svmTrain(model, trainMat, trainLabels);
+}
+
+void SVM::classify_SVM()
+{
+    cv::Ptr<cv::ml::SVM> model = cv::ml::SVM::load("results/OMR_SVM_Results.yml");
+    std::vector<cv::Mat> testCells = load_data("/home/jenny/Documents/Code/Coursework/OMR/Elements/");
+    std::vector<std::vector<float>> testHOG = CreateTrainTestHOG(testCells);
+    cv::Mat testMat = ConvertVectortoMatrix(testHOG,testMat);
+    cv::Mat testResponse;
+    svmPredict(model, testResponse, testMat);
+}
 
 void SVM::run_SVM()
 {
-    std::vector<cv::Mat> trainCells = load_data("..//Train_Data");
-    std::vector<cv::Mat> testCells = load_data("..//Elements");
+    std::vector<cv::Mat> trainCells = load_data("/home/jenny/Documents/Code/Coursework/OMR/Train_Data/");
+    std::vector<cv::Mat> testCells = load_data("/home/jenny/Documents/Code/Coursework/OMR/Elements/");
     std::vector<int> trainLabels;
 
     std::vector<std::vector<float>> trainHOG = CreateTrainTestHOG(trainCells);

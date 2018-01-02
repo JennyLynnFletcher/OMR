@@ -1,8 +1,19 @@
 #ifndef SVM_H
 #define SVM_H
 
+#include <iostream>
+#include <vector>
+#include <math.h>
+#include <QPixmap>
+#include <opencv2/opencv.hpp>
+#include <QtCore>
+#include <iostream>
+#include <dirent.h>
 #include <cv.h>
 #include <ml.h>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/objdetect.hpp>
+
 
 class SVM
 {
@@ -17,6 +28,8 @@ private:
     void SVMevaluate(cv::Mat &testResponse, float &count, float &accuracy, std::vector<int> &testLabels);
 public:
     void run_SVM();
+    void classify_SVM();
+    void train_SVM();
 };
 
 #endif // SVM_H

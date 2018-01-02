@@ -39,34 +39,6 @@ FORMS += \
         mainwindow.ui
 
 DISTFILES += \
-    Elements/element1.jpg \
-    Elements/element10.jpg \
-    Elements/element11.jpg \
-    Elements/element12.jpg \
-    Elements/element13.jpg \
-    Elements/element14.jpg \
-    Elements/element15.jpg \
-    Elements/element16.jpg \
-    Elements/element17.jpg \
-    Elements/element18.jpg \
-    Elements/element19.jpg \
-    Elements/element2.jpg \
-    Elements/element20.jpg \
-    Elements/element21.jpg \
-    Elements/element22.jpg \
-    Elements/element23.jpg \
-    Elements/element24.jpg \
-    Elements/element25.jpg \
-    Elements/element26.jpg \
-    Elements/element27.jpg \
-    Elements/element28.jpg \
-    Elements/element3.jpg \
-    Elements/element4.jpg \
-    Elements/element5.jpg \
-    Elements/element6.jpg \
-    Elements/element7.jpg \
-    Elements/element8.jpg \
-    Elements/element9.jpg \
     Train_Data/element1.jpg \
     Train_Data/element10.jpg \
     Train_Data/element11.jpg \

@@ -43,6 +43,8 @@ private slots:
 
     void on_connected_components_clicked();
 
+    void on_svm_train_clicked();
+
 private:
     Ui::MainWindow *ui;
     bool original_image_selected = true;

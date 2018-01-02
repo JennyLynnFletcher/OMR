@@ -1,5 +1,6 @@
 #include "OMR.h"
 #include "ui_mainwindow.h"
+#include <svm.h>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -176,7 +177,7 @@ void Score::standardise_elements()
         }
         cv::copyMakeBorder(temp_mat,temp_mat,0,output_y-temp_mat.rows,0,output_x-temp_mat.cols,cv::BORDER_CONSTANT);
         standardised_elements.push_back(temp_mat);
-        std::string filename = "/home/jenny/Documents/Code/OMR/Elements/element" + std::to_string(i) + ".jpg";
+        std::string filename = "/home/jenny/Documents/Code/Coursework/OMR/Elements/element" + std::to_string(i) + ".png";
         cv::imwrite(filename,standardised_elements[i-1]);
     }
 }
@@ -358,4 +359,10 @@ void MainWindow::on_connected_components_clicked()
     ui->binarized_image->setChecked(false);
     ui->removed_staves->setChecked(false);
 
+}
+
+void MainWindow::on_svm_train_clicked()
+{
+    SVM svm;
+    svm.train_SVM();
 }
