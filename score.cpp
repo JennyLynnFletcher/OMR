@@ -267,20 +267,3 @@ void Score::split_image()
         standardise_elements();
     }
 }
-
-void Score::get_pitch(std::vector<int> result_values)
-{
-    for (int i = 0; i < int(result_values.size()); i++)
-    {
-        if (result_values[i] >= 5 && result_values[i] <= 10)
-        {
-            cv::GaussianBlur(elements[i], smoothed_elements[i],cv::Size(3,3),0,0);
-            std::vector<cv::Vec3f> circles;
-            cv::HoughCircles(smoothed_elements[i], circles, CV_HOUGH_GRADIENT, 1, smoothed_elements[i].rows/8, 200, 50, 3, 50);
-            for (int a; a < int(circles.size());a++)
-            {
-                circle_y_centre.push_back(circles[a].val[1] + element_coord[a].val[1]);
-            }
-        }
-    }
-}
