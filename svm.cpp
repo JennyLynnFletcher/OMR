@@ -96,16 +96,19 @@ void SVM::svm_train(cv::Ptr<cv::ml::SVM> svm, cv::Mat &train_mat, std::vector<in
   svm->save("/home/jenny/Documents/Code/Coursework/OMR/results/OMR_SVM_Results.yml");
 }
 
-void SVM::svm_predict(cv::Ptr<cv::ml::SVM> svm, cv::Mat &test_response, cv::Mat &test_mat )
+std::vector<int> SVM::svm_predict(cv::Ptr<cv::ml::SVM> svm, cv::Mat &test_response, cv::Mat &test_mat )
 {
   svm->predict(test_mat, test_response);
+  std::vector<int> results;
   std::ofstream results_output;
   results_output.open("/home/jenny/Documents/Code/Coursework/OMR/results/results.txt");
   for(int i = 0; i < test_response.rows; i++)
   {
-     results_output<<(std::to_string(test_response.at<float>(i,0)) + "\n");
+     results_output<<(std::to_string(int(test_response.at<float>(i,0))) + "\n");
+     results.push_back(int(test_response.at<float>(i,0)));
   }
   results_output.close();
+  return results;
 }
 
 void SVM::SVM_evaluate(cv::Mat &test_response, float &count, float &accuracy, std::vector<int> &test_labels)
@@ -122,27 +125,34 @@ void SVM::train_SVM()
 {
     std::vector<cv::Mat> train_cells = load_images("/home/jenny/Documents/Code/Coursework/OMR/Train_Data/");
     std::vector<int> train_labels = load_labels("/home/jenny/Documents/Code/Coursework/OMR/train_values");
+    if (int(train_cells.size())>0)
+    {
+        std::vector<std::vector<float>> train_HOG = create_train_test_HOG(train_cells);
 
-    std::vector<std::vector<float>> train_HOG = create_train_test_HOG(train_cells);
+        cv::Mat train_mat = convert_vector_to_matrix(train_HOG);
 
-    cv::Mat train_mat = convert_vector_to_matrix(train_HOG);
+        float C = 12.5, gamma = 0.5;
 
-    float C = 12.5, gamma = 0.5;
+        cv::Mat test_response;
+        cv::Ptr<cv::ml::SVM> model = svm_init(C, gamma);
 
-    cv::Mat test_response;
-    cv::Ptr<cv::ml::SVM> model = svm_init(C, gamma);
-
-    svm_train(model, train_mat, train_labels);
+        svm_train(model, train_mat, train_labels);
+    }
 }
 
-void SVM::classify_SVM()
+std::vector<int> SVM::classify_SVM()
 {
     cv::Ptr<cv::ml::SVM> model = cv::ml::SVM::load("/home/jenny/Documents/Code/Coursework/OMR/results/OMR_SVM_Results.yml");
     std::vector<cv::Mat> test_cells = load_images("/home/jenny/Documents/Code/Coursework/OMR/Elements/");
-    std::vector<std::vector<float>> test_HOG = create_train_test_HOG(test_cells);
-    cv::Mat test_mat = convert_vector_to_matrix(test_HOG);
-    cv::Mat test_response;
-    svm_predict(model, test_response, test_mat);
+    std::vector<int> result_values;
+    if (int(test_cells.size())>0)
+    {
+        std::vector<std::vector<float>> test_HOG = create_train_test_HOG(test_cells);
+        cv::Mat test_mat = convert_vector_to_matrix(test_HOG);
+        cv::Mat test_response;
+        result_values = svm_predict(model, test_response, test_mat);
+    }
+    return result_values;
 }
 
 void SVM::run_SVM()

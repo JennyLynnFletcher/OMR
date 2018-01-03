@@ -68,7 +68,8 @@ void MainWindow::on_go_button_clicked()
 {
     on_update_image_clicked();
     score_to_read.split_image();
-    score_to_read.svm.classify_SVM();
+    std::vector<int> results = score_to_read.svm.classify_SVM();
+    score_to_read.get_labelled_elements(results);
 
 }
 

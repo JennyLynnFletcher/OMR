@@ -26,11 +26,11 @@ private:
     void get_SVM_params(cv::ml::SVM *svm);
     cv::Ptr<cv::ml::SVM> svm_init(float C, float gamma);
     void svm_train(cv::Ptr<cv::ml::SVM> svm, cv::Mat &train_mat, std::vector<int> &train_labels);
-    void svm_predict(cv::Ptr<cv::ml::SVM> svm, cv::Mat &test_response, cv::Mat &test_mat );
+    std::vector<int> svm_predict(cv::Ptr<cv::ml::SVM> svm, cv::Mat &test_response, cv::Mat &test_mat );
     void SVM_evaluate(cv::Mat &test_response, float &count, float &accuracy, std::vector<int> &test_labels);
 public:
     void run_SVM();
-    void classify_SVM();
+    std::vector<int> classify_SVM();
     void train_SVM();
 };
 

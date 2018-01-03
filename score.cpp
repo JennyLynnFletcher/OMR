@@ -104,6 +104,7 @@ void Score::find_connected_components()
 void Score::split_elements()
 {
     elements.clear();
+    element_coord.clear();
     removed_staves.convertTo(removed_staves,CV_8U);
     for (int i = 0; i<number_labels; ++i)
     {
@@ -137,6 +138,7 @@ void Score::split_elements()
                 }
             }
         }
+        element_coord.push_back(cv::Point(min_x, min_y));
         cv::Rect crop_area;
         crop_area.x = min_x;
         crop_area.y = min_y;
@@ -170,6 +172,17 @@ void Score::standardise_elements()
     }
 }
 
+void Score::label_elements(std::vector<int> result_values)
+{
+    cv::cvtColor(original_image,labelled_elements,CV_GRAY2BGR);
+    for (int i = 0; i < int(result_values.size());i++)
+    {
+        std::string label = std::to_string(result_values[i]);
+        cv::putText(labelled_elements,label,element_coord[i+1], cv::FONT_HERSHEY_SIMPLEX,0.4,cv::Scalar(255,0,0));
+    }
+    cv::imwrite("/home/jenny/Documents/Code/Coursework/OMR/results/label.png",labelled_elements);
+}
+
 std::vector<int> Score::get_staves()
 {
     return staves;
@@ -193,6 +206,12 @@ cv::Mat Score::get_removed_staves()
 cv::Mat Score::get_connected_components()
 {
     return coloured_connected_components;
+}
+
+cv::Mat Score::get_labelled_elements(std::vector<int> result_values)
+{
+    label_elements(result_values);
+    return labelled_elements;
 }
 
 std::vector<cv::Mat> Score::get_elements()
@@ -246,5 +265,22 @@ void Score::split_image()
     {
         split_elements();
         standardise_elements();
+    }
+}
+
+void Score::get_pitch(std::vector<int> result_values)
+{
+    for (int i = 0; i < int(result_values.size()); i++)
+    {
+        if (result_values[i] >= 5 && result_values[i] <= 10)
+        {
+            cv::GaussianBlur(elements[i], smoothed_elements[i],cv::Size(3,3),0,0);
+            std::vector<cv::Vec3f> circles;
+            cv::HoughCircles(smoothed_elements[i], circles, CV_HOUGH_GRADIENT, 1, smoothed_elements[i].rows/8, 200, 50, 3, 50);
+            for (int a; a < int(circles.size());a++)
+            {
+                circle_y_centre.push_back(circles[a].val[1] + element_coord[a].val[1]);
+            }
+        }
     }
 }
